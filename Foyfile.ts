@@ -23,7 +23,7 @@ before(() => {})
 desc('build whole project')
 task('build', async (ctx) => {
   await fs.rmrf('./lib')
-  await ctx.exec(['tsc -p ./tsconfig.build.json', 'chmod +x ./lib/cli.js'])
+  await ctx.exec(['rslib build', 'chmod +x ./dist/index.js'])
 })
 
 desc('generate doc')

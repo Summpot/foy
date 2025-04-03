@@ -5,11 +5,17 @@ import { fs } from './fs'
 import { ILoggerProps, logger } from './logger'
 import { CliLoading } from './cli-loading'
 import { DepBuilder } from './dep-builder'
-import { GlobalOptions, RunTaskOptions, getGlobalTaskManager, TaskContext, ListenerNames } from './task-manager'
+import {
+  GlobalOptions,
+  RunTaskOptions,
+  getGlobalTaskManager,
+  TaskContext,
+  ListenerNames,
+} from './task-manager'
 import { deferRunCli } from './run-cli'
 interface OptionConfig {
-  default?: any;
-  type?: any[];
+  default?: any
+  type?: any[]
 }
 export type OptionDef = [string, string, OptionConfig | undefined]
 
@@ -73,7 +79,7 @@ export function setGlobalOptions(options: GlobalOptions) {
   options.spinner ??= options.loading
   Object.assign(getGlobalTaskManager().globalOptions, options)
 }
-function appendCallback<Fn extends ((...args) => void | Promise<void>)>(name: ListenerNames, fn: Fn) {
+function appendCallback<Fn extends (...args) => void | Promise<void>>(name: ListenerNames, fn: Fn) {
   let tm = getGlobalTaskManager()
   tm.listeners[name].push({
     namespaces: tm.namespaces,
@@ -82,17 +88,32 @@ function appendCallback<Fn extends ((...args) => void | Promise<void>)>(name: Li
 }
 export const before = (fn: (t: Task) => void | Promise<void>) => appendCallback('before', fn)
 export const after = (fn: (t: Task) => void | Promise<void>) => appendCallback('after', fn)
-export const onerror = (fn: (err: Error, t: Task) => void | Promise<void>) => appendCallback('onerror', fn)
+export const onerror = (fn: (err: Error, t: Task) => void | Promise<void>) =>
+  appendCallback('onerror', fn)
 
 namespace TaskOptions {
-  export let last = empty()
-  export function empty() {
+  export const empty = () => {
     return {
       desc: undefined as undefined | string,
       optionDefs: [] as OptionDef[],
       strict: getGlobalTaskManager().globalOptions.strict,
       spinner: undefined as undefined | boolean,
     } satisfies Partial<Task>
+  }
+  const _lastState = {
+    current: TaskOptions.empty() as Partial<Task>,
+  }
+
+  export const last = {
+    get value() {
+      return _lastState.current
+    },
+    set value(newValue: Partial<Task>) {
+      _lastState.current = newValue
+    },
+    reset() {
+      _lastState.current = TaskOptions.empty()
+    },
   }
 }
 
@@ -101,7 +122,7 @@ namespace TaskOptions {
  * @param desc
  */
 export function desc(desc: string) {
-  TaskOptions.last.desc = desc
+  TaskOptions.last.value.desc = desc
 }
 /**
  * Define a task cli option
@@ -110,19 +131,19 @@ export function desc(desc: string) {
  * @param config
  */
 export function option(rawName: string, description: string, config?: OptionConfig) {
-  TaskOptions.last.optionDefs.push([rawName, description, config])
+  TaskOptions.last.value.optionDefs?.push([rawName, description, config])
 }
 /**
  * Define task cli options are strict, which means it will throw an error if you passed undefined options.
  */
 export function strict() {
-  TaskOptions.last.strict = true
+  TaskOptions.last.value.strict = true
 }
 /**
  * Define whether task show spinner, default is setGlobalOptions({loading: })
  */
 export function spinner(enable: boolean) {
-  TaskOptions.last.spinner = enable
+  TaskOptions.last.value.spinner = enable
 }
 /**
  * Set options for next task.
@@ -156,12 +177,12 @@ export function task<O>(
     name,
     namespaces,
     options: {},
-    optionDefs: TaskOptions.last.optionDefs,
-    desc: TaskOptions.last.desc,
-    strict: TaskOptions.last.strict,
-    spinner: TaskOptions.last.spinner,
+    optionDefs: TaskOptions.last.value.optionDefs,
+    desc: TaskOptions.last.value.desc,
+    strict: TaskOptions.last.value.strict,
+    spinner: TaskOptions.last.value.spinner,
     rawArgs: [],
-    dependencies: dependencies.map(d => {
+    dependencies: dependencies.map((d) => {
       if (Is.str(d)) {
         return { name: d, options: {} } as Task
       } else if (d._isDepBuilder) {
@@ -171,7 +192,7 @@ export function task<O>(
     }),
     fn,
   }
-  TaskOptions.last = TaskOptions.empty()
+  TaskOptions.last.reset()
   getGlobalTaskManager().addTask(t)
   deferRunCli()
   return t
