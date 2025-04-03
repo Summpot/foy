@@ -1,4 +1,4 @@
-import execa from 'execa'
+import { execa, Options as ExecaOptions, Result, ResultPromise } from 'execa'
 import pathLib from 'path'
 import { logger, logger as _logger } from './logger'
 import { sleep, Is, DefaultLogFile } from './utils'
@@ -8,25 +8,22 @@ import { ChildProcess } from 'child_process'
 const shellParser = require('shell-parser')
 export { execa }
 
-function _exec(cmd: string, options?: execa.Options) {
+function _exec(cmd: string, options?: ExecaOptions) {
   let [file, ...args] = shellParser(cmd)
   return execa(file, args, {
     stdio: 'inherit',
-    ...options
+    ...options,
   })
 }
-export function exec(command: string, options?: execa.Options): execa.ExecaChildProcess
-export function exec(
-  commands: string[],
-  options?: execa.Options,
-): Promise<execa.ExecaSyncReturnValue<string>[]>
-export function exec(commands: string | string[], options?: execa.Options): any {
+export function exec(command: string, options?: ExecaOptions): ResultPromise<ExecaOptions>
+export function exec(commands: string[], options?: ExecaOptions): Promise<Result<ExecaOptions>[]>
+export function exec(commands: string | string[], options?: ExecaOptions): any {
   if (Is.str(commands)) {
     return _exec(commands, options)
   }
 
-  const rets: execa.ExecaSyncReturnValue<string>[] = []
-  let retsP: Promise<execa.ExecaSyncReturnValue<string>[]> = Promise.resolve(null as any)
+  const rets: Result<ExecaOptions>[] = []
+  let retsP: Promise<Result<ExecaOptions>[]> = Promise.resolve(null as any)
   for (const cmd of commands) {
     retsP = retsP.then(() => {
       return _exec(cmd, options).then((r) => {
@@ -85,9 +82,9 @@ export class ShellContext {
    * @param command
    * @param options
    */
-  exec(command: string, options?: execa.Options): execa.ExecaChildProcess
-  exec(commands: string[], options?: execa.Options): Promise<execa.ExecaSyncReturnValue[]>
-  exec(commands: string | string[], options?: execa.Options): any {
+  exec(command: string, options?: ExecaOptions): ResultPromise<ExecaOptions>
+  exec(commands: string[], options?: ExecaOptions): Promise<Result<ExecaOptions>[]>
+  exec(commands: string | string[], options?: ExecaOptions): any {
     this._logCmd(commands)
     let p = exec(commands as any, {
       cwd: this.cwd,
@@ -109,7 +106,7 @@ export class ShellContext {
    * @param options
    * @returns
    */
-  exec_unix(cmd: string, options?: execa.Options) {
+  exec_unix(cmd: string, options?: ExecaOptions) {
     return this.spawn('$SHELL', ['-i', '-c', cmd])
   }
   /**
@@ -118,7 +115,7 @@ export class ShellContext {
    * @param args
    * @param options
    */
-  spawn(file: string, args: string[] = [], options?: execa.Options): execa.ExecaChildProcess {
+  spawn(file: string, args: string[] = [], options?: ExecaOptions): ResultPromise<ExecaOptions> {
     const command = file + ' ' + args.map((a) => `"${a.replace(/"/g, '\\"')}"`).join(' ')
     this._logCmd(command)
     let p = spawn(file, args, {
@@ -152,7 +149,7 @@ export class ShellContext {
   env(key: string, val: string | undefined): this
   env(key: string, val?: string): string | undefined | this {
     if (arguments.length === 1) {
-      [key, val] = key.split('=', 2)
+      ;[key, val] = key.split('=', 2)
     }
     if (Is.defined(val)) {
       this._env[key] = val
