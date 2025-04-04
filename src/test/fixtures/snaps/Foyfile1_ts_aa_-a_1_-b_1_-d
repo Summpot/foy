@@ -1,4 +1,5 @@
-foy/node_modules//cac/dist/index.js:391
+file:foy/node_modules//cac/dist/index.mjs:400
           throw new CACError(`Unknown option \`${name.length > 1 ? `--${name}` : `-${name}`}\``);
-                ^
+          ^
+
 CACError: Unknown option `-b`

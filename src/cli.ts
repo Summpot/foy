@@ -40,8 +40,6 @@ async function main() {
           process.exit(1)
         }
       }
-
-      logger.info('use executor: ', chalk.green(executor))
     }
     const args = [
       ...registers.map((r) => `--${isESM ? 'import' : 'require'} ${r}`),

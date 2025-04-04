@@ -4,18 +4,21 @@ DependencyGraph for task [fails]:
 Task: fails
 [info] Fail this task
 [info] $ node -e "console.log(\"start\"); process.exit(1)"
-startfoy/node_modules//execa/lib/error.js:59
-		error = new Error(message);
-          ^
-Error: Command failed with exit code 1: node -e console.log("start"); process.exit(1)  shortMessage: 'Command failed with exit code 1: node -e console.log("start"); process.exit(1)',
+startfile:foy/node_modules//execa/lib/return/final-error.js:6
+  return new ErrorClass(message, options);
+         ^
+
+ExecaError: Command failed with exit code 1: node -e 'console.log("start"); process.exit(1)'  shortMessage: `Command failed with exit code 1: node -e 'console.log("start"); process.exit(1)'`,
   command: 'node -e console.log("start"); process.exit(1)',
-  exitCode: 1,
-  signal: undefined,
-  signalDescription: undefined,
-  stdout: undefined,
-  stderr: undefined,
-  failed: true,
+  escapedCommand: `node -e 'console.log("start"); process.exit(1)'`,
+  cwd: 'foy',
+  dur  failed: true,
   timedOut: false,
   isCanceled: false,
-  killed: false
+  isGracefullyCanceled: false,
+  isTermin  isMaxBuffer: false,
+  isForcefullyTermin  exitCode: 1,
+  stdio: [ undefined, undefined, undefined ],
+  ipcOutput: [],
+  pipedFrom: []
 }

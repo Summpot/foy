@@ -4,9 +4,10 @@ import { exec } from '../exec'
 import * as path from 'path'
 import { logger } from '../logger'
 import { Is, sleep } from '../utils'
-import { describe, it, before, beforeEach } from 'node:test'
-import assert, { equal } from 'assert'
+import { describe, it, beforeAll, beforeEach } from 'vitest'
+import assert from 'assert'
 import stripAnsi from 'strip-ansi'
+import { expect } from 'vitest'
 
 const fixturesDir = `${__dirname}/fixtures`
 const snapsDir = `${fixturesDir}/snaps`
@@ -17,32 +18,34 @@ function normal(s: string) {
   s = s.replace(/[\/\\][\w\/\\]+foy/g, 'foy').trim()
   s = s.replace(/\s*at[^\n]*?(\n|$)/g, '')
   // simply hack
-  s = s.replace(/.pnpm\/[^\/]+\/node_modules/,'')
+  s = s.replace(/.pnpm\/[^\/]+\/node_modules/, '')
+  s = s.replace(/\t/g, '  ')
   return s
 }
 function test(cmd: string, expectedExitCode?: number) {
   let out = 'Not initialized'
   let snap = ''
-  let exitCode = 0;
+  let exitCode = 0
   return {
     name: cmd,
     it() {
       it(cmd, () => {
-        equal(normal(out),normal(snap))
+        expect(normal(out)).toBe(normal(snap))
         if (Is.defined(expectedExitCode)) {
-          equal(exitCode, expectedExitCode)
+          expect(exitCode).toBe(expectedExitCode)
         }
       })
     },
     async init() {
-      let p = await exec(`tsx ./src/cli.ts --config ${fixturesDir}/${cmd}`, {
+      let p = await exec(`jiti ./src/cli.ts --config ${fixturesDir}/${cmd}`, {
         stdio: void 0,
         env: {
           ...process.env,
-          DISABLE_V8_COMPILE_CACHE:'1',
+          DISABLE_V8_COMPILE_CACHE: '1',
+          NODE_OPTIONS: '--no-extra-info-on-fatal-exception',
         },
       }).catch((er) => er)
-      exitCode = p.exitCode;
+      exitCode = p.exitCode
       out = normal(p.stdout + p.stderr)
       let snapFile = snapsDir + '/' + cmd.replace(/[^\w-]/g, '_')
       if (UpdateSnap) {
@@ -52,7 +55,7 @@ function test(cmd: string, expectedExitCode?: number) {
         return null
       }
       snap = await fs.readFile(snapFile, 'utf8')
-    }
+    },
   }
 }
 
@@ -84,23 +87,20 @@ describe('task', function () {
     test(`Foyfile2.ts ns1:ns2:t2`),
     test(`Foyfile2.ts exec`),
   ]
-  before(
-    async () => {
-      if (UpdateSnap) {
-        await fs.rmrf(snapsDir)
-      }
-      await Promise.allSettled(tests.map((t) => t.init())).catch(logger.error)
-      console.log('init')
-    },
-    {
-      timeout: 600 * 1000,
-    },
-  )
-  tests.forEach(t => t.it())
+  beforeAll(async () => {
+    if (UpdateSnap) {
+      await fs.rmrf(snapsDir)
+    }
+    await Promise.allSettled(tests.map((t) => t.init())).catch(logger.error)
+    console.log('init')
+  }, 600 * 1000)
+  tests.forEach((t) => t.it())
 })
 
 describe('loading', async () => {
   it('loading', async () => {
-    await assert.doesNotReject(exec(`tsx ./src/cli.ts --config ${fixturesDir}/Foyfile2.ts start`))
+    await expect(async () => {
+      await exec(`jiti ./src/cli.ts --config ${fixturesDir}/Foyfile2.ts start`)
+    }).not.toThrow()
   })
 })

@@ -7,7 +7,8 @@ Task: ns1:error
 [info] onerror ns1 test error ns1:error
 [info] onerrorError test error ns1:error
 [info] after ns1 ns1:error
-[info] afterAll ns1:errorfoy/node_modules//tslib/tslib.js:110
-        return new (P || (P = Promise))(function (resolve, reject) {
-               ^
+[info] afterAll ns1:errorfoy/src/test/fixtures/Foyfile2.ts:45
+    throw new Error('test error');
+          ^
+
 Error: test error
