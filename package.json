@@ -1,6 +1,6 @@
 {
-  "name": "foy",
-  "version": "0.2.44",
+  "name": "@summpot/foy",
+  "version": "0.2.45",
   "type": "module",
   "description": "A simple, light-weight and modern task runner for general purpose.",
   "types": "./dist/index.d.ts",
@@ -27,7 +27,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zaaack/foy.git"
+    "url": "git+https://github.com/Summpot/foy.git"
   },
   "keywords": [
     "make",
@@ -38,10 +38,11 @@
   "author": "Zack Young",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/zaaack/foy/issues"
+    "url": "https://github.com/Summpot/foy/issues"
   },
-  "homepage": "https://github.com/zaaack/foy#readme",
+  "homepage": "https://github.com/Summpot/foy#readme",
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@rslib/core": "^0.6.1",
     "@types/ejs": "^3.1.5",
     "@types/jasmine": "^5.1.7",
