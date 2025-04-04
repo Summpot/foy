@@ -1,49 +1,55 @@
-import cac, { CAC } from 'cac'
-import { fs } from './fs'
-import pathLib from 'path'
-import os from 'os'
-import { logger } from './logger'
-import { Is } from './utils'
-import { getGlobalTaskManager } from './task-manager'
-import requireStr from 'require-from-string'
+import cac, { CAC } from "cac";
+import { fs } from "./fs";
+import pathLib from "path";
+import os from "os";
+import { logger } from "./logger";
+import { Is } from "./utils";
+import { getGlobalTaskManager } from "./task-manager";
+import requireStr from "require-from-string";
 
 export function initDefaultCli() {
-  const defaultCli = cac()
-  // generate default argv because cac cannot handle `foy command` + `foy options`
+	const defaultCli = cac();
+	// generate default argv because cac cannot handle `foy command` + `foy options`
 
-  // parse default options
-  const defaultOptions = [
-    [`--config, -c <...files>`, 'The Foyfiles'],
-    [`--require, -r <...names>`, 'Require the given modules'],
-    [`--executor, -e [name]`, 'Custom executor to replace node, e.g. tsx/ts-node'],
-    [`--init, -i [ext]`, 'Generate the Foyfile, [ext] can be "ts" | "js", default is "js"'],
-    [`--completion [words]`, `Generate completion words`],
-    [`--completion-profile`, `Generate completion shell profile`],
-    [`--inspect`, `node inspect`],
-    [`--inspect-brk`, `node inspect`],
-  ] as const
-  defaultOptions.forEach(([name, desc]) => {
-    defaultCli.option(name, desc)
-  })
-  let parsedArgv =defaultCli.parse(process.argv)
+	// parse default options
+	const defaultOptions = [
+		[`--config, -c <...files>`, "The Foyfiles"],
+		[`--require, -r <...names>`, "Require the given modules"],
+		[
+			`--executor, -e [name]`,
+			"Custom executor to replace node, e.g. tsx/ts-node",
+		],
+		[
+			`--init, -i [ext]`,
+			'Generate the Foyfile, [ext] can be "ts" | "js", default is "js"',
+		],
+		[`--completion [words]`, `Generate completion words`],
+		[`--completion-profile`, `Generate completion shell profile`],
+		[`--inspect`, `node inspect`],
+		[`--inspect-brk`, `node inspect`],
+	] as const;
+	defaultOptions.forEach(([name, desc]) => {
+		defaultCli.option(name, desc);
+	});
+	let parsedArgv = defaultCli.parse(process.argv);
 
-  if (defaultCli.options.init) {
-    let ext = defaultCli.options.init
-    if (!Is.str(ext)) {
-      ext = 'js'
-    }
-    ext = ext.replace(/^\./, '')
-    const file = `./Foyfile.${ext}`
-    if (fs.existsSync(file)) {
-      throw new Error(`Foyfile already exists: ${pathLib.resolve(file)}`)
-    }
-    fs.writeFileSync(
-      file,
-      `${
-        ext === 'js'
-          ? `const { task, desc, option, fs, logger } = require('foy')`
-          : `import { task, desc, option, fs, logger } from 'foy'`
-      }
+	if (defaultCli.options.init) {
+		let ext = defaultCli.options.init;
+		if (!Is.str(ext)) {
+			ext = "js";
+		}
+		ext = ext.replace(/^\./, "");
+		const file = `./Foyfile.${ext}`;
+		if (fs.existsSync(file)) {
+			throw new Error(`Foyfile already exists: ${pathLib.resolve(file)}`);
+		}
+		fs.writeFileSync(
+			file,
+			`${
+				ext === "js"
+					? `const { task, desc, option, fs, logger } = require('foy')`
+					: `import { task, desc, option, fs, logger } from 'foy'`
+			}
 
   task('build', async ctx => {
     logger.info('Running build task')
@@ -52,10 +58,10 @@ export function initDefaultCli() {
   })
 
   `,
-    )
-    process.exit()
-  } else if (defaultCli.options.completionProfile) {
-    console.log(`
+		);
+		process.exit();
+	} else if (defaultCli.options.completionProfile) {
+		console.log(`
 ###-begin-foy-completions-###
 #
 # foy command completion script
@@ -78,157 +84,171 @@ _foy_complete_func()
     fi
 }
 ###-end-foy-completions-###
-  `)
-    process.exit()
-  }
+  `);
+		process.exit();
+	}
 
-  function arrify(arr: any | any[]) {
-    if (!Array.isArray(arr)) {
-      return arr == null ? [] : [arr]
-    }
-    return arr
-  }
+	function arrify(arr: any | any[]) {
+		if (!Array.isArray(arr)) {
+			return arr == null ? [] : [arr];
+		}
+		return arr;
+	}
 
-  let foyFiles: string[] = arrify(defaultCli.options.config)
-  let registers: string[] = arrify(defaultCli.options.require)
+	let foyFiles: string[] = arrify(defaultCli.options.config);
+	let registers: string[] = arrify(defaultCli.options.require);
 
-  if (foyFiles.length) {
-    foyFiles = foyFiles.map((c) => pathLib.resolve(process.cwd(), c))
+	if (foyFiles.length) {
+		foyFiles = foyFiles.map((c) => pathLib.resolve(process.cwd(), c));
 
-    // check custom foyfiles exists
-    for (const file of foyFiles) {
-      if (!fs.existsSync(file)) {
-        throw new TypeError(`Cannot find Foyfile: ${file}`)
-      }
-    }
-  } else {
-    // find default foyfiles
-    let findFoyfiles = (baseDir: string) => {
-      let cwdFoyfiles = fs.readdirSync(baseDir).filter((f) => f.startsWith('Foyfile.'))
-      if (cwdFoyfiles.length) {
-        if (cwdFoyfiles.length > 1) {
-          logger.warn(
-            `Find more than 1 Foyfile in current directory, only first one will be used: \n${cwdFoyfiles.join(
-              '\n',
-            )}`,
-          )
-        }
-        foyFiles = [pathLib.join(baseDir, cwdFoyfiles[0])]
-      }
-    }
-    findFoyfiles(process.cwd())
-    if (!foyFiles.length) {
-      let maxDepth = 5
-      let dir = process.cwd()
-      while (maxDepth-- && dir !== '/' && dir && !foyFiles.length) {
-        dir = pathLib.dirname(dir)
-        findFoyfiles(dir)
-      }
-    }
-  }
-  // add custom registers
-  // if (registers.length) {
-  //   for (let mod of registers) {
-  //     try {
-  //       require(mod)
-  //     } catch (error) {
-  //       require(pathLib.resolve(process.cwd(), mod))
-  //     }
-  //   }
-  // }
+		// check custom foyfiles exists
+		for (const file of foyFiles) {
+			if (!fs.existsSync(file)) {
+				throw new TypeError(`Cannot find Foyfile: ${file}`);
+			}
+		}
+	} else {
+		// find default foyfiles
+		let findFoyfiles = (baseDir: string) => {
+			let cwdFoyfiles = fs
+				.readdirSync(baseDir)
+				.filter((f) => f.startsWith("Foyfile."));
+			if (cwdFoyfiles.length) {
+				if (cwdFoyfiles.length > 1) {
+					logger.warn(
+						`Find more than 1 Foyfile in current directory, only first one will be used: \n${cwdFoyfiles.join(
+							"\n",
+						)}`,
+					);
+				}
+				foyFiles = [pathLib.join(baseDir, cwdFoyfiles[0])];
+			}
+		};
+		findFoyfiles(process.cwd());
+		if (!foyFiles.length) {
+			let maxDepth = 5;
+			let dir = process.cwd();
+			while (maxDepth-- && dir !== "/" && dir && !foyFiles.length) {
+				dir = pathLib.dirname(dir);
+				findFoyfiles(dir);
+			}
+		}
+	}
+	// add custom registers
+	// if (registers.length) {
+	//   for (let mod of registers) {
+	//     try {
+	//       require(mod)
+	//     } catch (error) {
+	//       require(pathLib.resolve(process.cwd(), mod))
+	//     }
+	//   }
+	// }
 
-  // add ts-node registry for ts foyfile
-  function isESM() {
-    try {
-      let pkg = fs.readJsonSync('./package.json')
-      return pkg.type === 'module'
-    } catch (e) {
-      return false
-    }
-  }
-  const tsnodeOptions = {
-    transpileOnly: true,
-    compilerOptions: {
-      module: 'commonjs',
-      esModuleInterop: true,
-      moduleResolution: 'node',
-      sourceMap: true,
-    },
-  }
+	// add ts-node registry for ts foyfile
+	function isESM() {
+		try {
+			let pkg = fs.readJsonSync("./package.json");
+			return pkg.type === "module";
+		} catch (e) {
+			return false;
+		}
+	}
+	const tsnodeOptions = {
+		transpileOnly: true,
+		compilerOptions: {
+			module: "commonjs",
+			esModuleInterop: true,
+			moduleResolution: "node",
+			sourceMap: true,
+		},
+	};
 
-  // if (foyFiles.some((f) => f.endsWith('.ts')) && !require.extensions['.ts']) {
-  //   // make ts-node show errors if no register
-  //   require('ts-node').register(tsnodeOptions)
-  // }
+	// if (foyFiles.some((f) => f.endsWith('.ts')) && !require.extensions['.ts']) {
+	//   // make ts-node show errors if no register
+	//   require('ts-node').register(tsnodeOptions)
+	// }
 
-  // {
-  //   // Add global installed foy to module.paths if using global foy
-  //   const Module = require('module')
-  //   const nodeModulePaths = Module._nodeModulePaths
-  //   const globalFoyPath = pathLib.join(__dirname, '..', '..')
-  //   if (nodeModulePaths) {
-  //     Module._nodeModulePaths = (...args) => {
-  //       let paths = nodeModulePaths.apply(Module, args)
-  //       if (Array.isArray(paths)) {
-  //         paths.push(globalFoyPath)
-  //       }
-  //       return paths
-  //     }
-  //   }
-  // }
+	// {
+	//   // Add global installed foy to module.paths if using global foy
+	//   const Module = require('module')
+	//   const nodeModulePaths = Module._nodeModulePaths
+	//   const globalFoyPath = pathLib.join(__dirname, '..', '..')
+	//   if (nodeModulePaths) {
+	//     Module._nodeModulePaths = (...args) => {
+	//       let paths = nodeModulePaths.apply(Module, args)
+	//       if (Array.isArray(paths)) {
+	//         paths.push(globalFoyPath)
+	//       }
+	//       return paths
+	//     }
+	//   }
+	// }
 
-  // load foyfiles
-  // {
-  //   let tsnode: any
-  //   for (const file of foyFiles) {
-  //     if (isESM()) {
-  //       // use tsnode to transpile ESM
-  //       if (!tsnode) {
-  //         tsnode = require('ts-node').create(tsnodeOptions)
-  //       }
-  //       const code = tsnode.compile(fs.readFileSync(file, 'utf-8'), file)
-  //       requireStr(code, file)
-  //     } else {
-  //       require(file)
-  //     }
-  //   }
-  // }
+	// load foyfiles
+	// {
+	//   let tsnode: any
+	//   for (const file of foyFiles) {
+	//     if (isESM()) {
+	//       // use tsnode to transpile ESM
+	//       if (!tsnode) {
+	//         tsnode = require('ts-node').create(tsnodeOptions)
+	//       }
+	//       const code = tsnode.compile(fs.readFileSync(file, 'utf-8'), file)
+	//       requireStr(code, file)
+	//     } else {
+	//       require(file)
+	//     }
+	//   }
+	// }
 
-  const defaultHelpMsg = defaultOptions
-    .map(
-      ([name, desc]) =>
-        `  ${name}:${Array(30 - name.length)
-          .fill(' ')
-          .join('')}${desc}`,
-    )
-    .join('\n')
+	const defaultHelpMsg = defaultOptions
+		.map(
+			([name, desc]) =>
+				`  ${name}:${Array(30 - name.length)
+					.fill(" ")
+					.join("")}${desc}`,
+		)
+		.join("\n");
 
-  defaultCli.help(c=>{
-    console.log(c)
-  })
+	defaultCli.help((c) => {
+		console.log(c);
+	});
 
-
-  function outputCompletion(taskCli: CAC) {
-    let completVal = defaultCli.options.completion
-    if (!completVal) return
-    if (completVal === 'foy') {
-      completVal = ''
-    }
-    function getOptionComplets(cmd: string) {
-      return taskCli.commands
-        .find((c) => c.name === cmd)
-        ?.options?.map((o) => '--' + o.name)
-        .join(' ')
-    }
-    const cmdComplets = taskCli.commands.map((c) => c.name)
-    // .concat(defaultOptions.map((d) => d[0].split(/[,\s]/)[0]).filter(v => !v.includes('completion')))
-    if (completVal && cmdComplets.includes(completVal)) {
-      console.log(getOptionComplets(completVal))
-    } else {
-      console.log(cmdComplets.join(' '))
-    }
-    process.exit()
-  }
-  const taskArgs = process.argv.slice(0, 2).concat(process.argv.slice(process.argv.findIndex(a=> a===parsedArgv.args[0])))
-  return { defaultHelpMsg, defaultCli, outputCompletion, registers, foyFiles, taskArgs }
+	function outputCompletion(taskCli: CAC) {
+		let completVal = defaultCli.options.completion;
+		if (!completVal) return;
+		if (completVal === "foy") {
+			completVal = "";
+		}
+		function getOptionComplets(cmd: string) {
+			return taskCli.commands
+				.find((c) => c.name === cmd)
+				?.options?.map((o) => "--" + o.name)
+				.join(" ");
+		}
+		const cmdComplets = taskCli.commands.map((c) => c.name);
+		// .concat(defaultOptions.map((d) => d[0].split(/[,\s]/)[0]).filter(v => !v.includes('completion')))
+		if (completVal && cmdComplets.includes(completVal)) {
+			console.log(getOptionComplets(completVal));
+		} else {
+			console.log(cmdComplets.join(" "));
+		}
+		process.exit();
+	}
+	const taskArgs = process.argv
+		.slice(0, 2)
+		.concat(
+			process.argv.slice(
+				process.argv.findIndex((a) => a === parsedArgv.args[0]),
+			),
+		);
+	return {
+		defaultHelpMsg,
+		defaultCli,
+		outputCompletion,
+		registers,
+		foyFiles,
+		taskArgs,
+	};
 }

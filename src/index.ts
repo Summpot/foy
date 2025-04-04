@@ -1,8 +1,20 @@
-export * from './exec'
-export * from './fs'
-export * from './logger'
-export { dep } from './dep-builder'
-export { task, desc, option, strict, setOption, setGlobalOptions, namespace, before, after, onerror, spinner } from './task'
-export type { Dependency, Task, TaskFn, TaskDep } from './task'
-export { sleep, debounce as throttle, defaults, Is } from './utils'
-export type { GlobalOptions } from './task-manager'
+export * from "./exec";
+export * from "./fs";
+export * from "./logger";
+export { dep } from "./dep-builder";
+export {
+	task,
+	desc,
+	option,
+	strict,
+	setOption,
+	setGlobalOptions,
+	namespace,
+	before,
+	after,
+	onerror,
+	spinner,
+} from "./task";
+export type { Dependency, Task, TaskFn, TaskDep } from "./task";
+export { sleep, debounce as throttle, defaults, Is } from "./utils";
+export type { GlobalOptions } from "./task-manager";
