@@ -12,12 +12,11 @@
 		}
 	},
 	"scripts": {
-		"foy": "jiti ./src/cli.ts",
-		"build": "foy -- build",
+		"build": "jiti ./src/cli.ts -- build",
 		"check": "biome check --write",
-		"test": "foy -- test",
-		"test:update-snap": "foy -- test:update-snap",
-		"watch": "foy -- watch",
+		"test": "jiti ./src/cli.ts -- test",
+		"test:update-snap": "jiti ./src/cli.ts -- test:update-snap",
+		"watch": "jiti ./src/cli.ts -- watch",
 		"format": "biome format --write"
 	},
 	"bin": {
