@@ -1,6 +1,6 @@
 {
 	"name": "@summpot/foy",
-	"version": "0.2.45",
+	"version": "0.2.46",
 	"type": "module",
 	"description": "A simple, light-weight and modern task runner for general purpose.",
 	"types": "./dist/index.d.ts",
