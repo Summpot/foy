@@ -1,15 +1,20 @@
-import { execa, Options as ExecaOptions, Result, ResultPromise } from "execa";
+import type { ChildProcess } from "child_process";
 import pathLib from "path";
-import { logger, logger as _logger } from "./logger";
-import { sleep, Is, DefaultLogFile } from "./utils";
-import { fs, WatchDirOptions } from "./fs";
 import { Stream, Writable } from "stream";
-import { ChildProcess } from "child_process";
+import {
+	type Options as ExecaOptions,
+	type Result,
+	type ResultPromise,
+	execa,
+} from "execa";
+import { fs, type WatchDirOptions } from "./fs";
+import { logger as _logger, logger } from "./logger";
+import { DefaultLogFile, Is, sleep } from "./utils";
 const shellParser = require("shell-parser");
 export { execa };
 
 function _exec(cmd: string, options?: ExecaOptions) {
-	let [file, ...args] = shellParser(cmd);
+	const [file, ...args] = shellParser(cmd);
 	return execa(file, args, {
 		stdio: "inherit",
 		...options,
@@ -97,7 +102,7 @@ export class ShellContext {
 	): Promise<Result<ExecaOptions>[]>;
 	exec(commands: string | string[], options?: ExecaOptions): any {
 		this._logCmd(commands);
-		let p = exec(commands as any, {
+		const p = exec(commands as any, {
 			cwd: this.cwd,
 			env: {
 				...process.env,
@@ -134,7 +139,7 @@ export class ShellContext {
 		const command =
 			file + " " + args.map((a) => `"${a.replace(/"/g, '\\"')}"`).join(" ");
 		this._logCmd(command);
-		let p = spawn(file, args, {
+		const p = spawn(file, args, {
 			cwd: this.cwd,
 			env: {
 				...process.env,
@@ -193,13 +198,13 @@ export class ShellContext {
 			ignore?: (event: string, file: string | null) => boolean;
 		} = {},
 	) {
-		let p = this._process;
+		const p = this._process;
 		if (typeof run === "string") {
-			let cmd = run;
+			const cmd = run;
 			run = (p) => (p.current = this.exec(cmd));
 		}
 		if (Array.isArray(run)) {
-			let cmds = run;
+			const cmds = run;
 			run = async (p) => {
 				for (const cmd of cmds.slice(0, -1)) {
 					await this.exec(cmd);

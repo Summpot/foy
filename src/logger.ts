@@ -1,5 +1,5 @@
-import chalk from "chalk";
 import util from "util";
+import chalk from "chalk";
 import stripAnsi from "strip-ansi";
 import { formatDate } from "./utils";
 
@@ -17,14 +17,14 @@ function makeLogger(level: LogLevels, logger: Logger) {
 			...Logger.defaultProps,
 			...props,
 		};
-		let levelNum: number = LogLevels[level];
-		let filterLevelNum: number = LogLevels[props.level || "debug"];
+		const levelNum: number = LogLevels[level];
+		const filterLevelNum: number = LogLevels[props.level || "debug"];
 		const time = props.logTime
 			? typeof props.logTime === "function"
 				? props.logTime()
 				: formatDate(new Date())
 			: "";
-		let message = (props.format || Logger.defaultProps.format!)(
+		const message = (props.format || Logger.defaultProps.format!)(
 			level,
 			time,
 			props.levelColor![level],

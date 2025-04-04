@@ -1,20 +1,20 @@
+import * as ejs from "ejs";
+import { marked } from "marked";
 import {
-	task,
-	desc,
-	option,
-	logger,
 	fs,
-	strict,
+	before,
+	desc,
+	exec,
+	execa,
+	logger,
+	namespace,
+	option,
 	setGlobalOptions,
 	setOption,
 	sleep,
-	namespace,
-	exec,
-	before,
-	execa,
+	strict,
+	task,
 } from "./src/";
-import { marked } from "marked";
-import * as ejs from "ejs";
 
 setGlobalOptions({ spinner: false, strict: true });
 
@@ -94,12 +94,12 @@ task<{ version: string }>(
 );
 
 task("site:home", async (ctx) => {
-	let pkg = await ctx.fs.readJson("./package.json");
-	let desc = pkg.description;
-	let md = await ctx.fs.readFile("./README.md", "utf8");
-	let content = marked(md);
+	const pkg = await ctx.fs.readJson("./package.json");
+	const desc = pkg.description;
+	const md = await ctx.fs.readFile("./README.md", "utf8");
+	const content = marked(md);
 
-	let data = {
+	const data = {
 		name: "Foy",
 		desc,
 		content,
@@ -108,7 +108,7 @@ task("site:home", async (ctx) => {
 		authorUrl: "https://github.com/zaaack",
 		apiUrl: "http://zaaack.github.io/foy/api",
 	};
-	let html = await ejs.renderFile("./docs-src/index.html", data);
+	const html = await ejs.renderFile("./docs-src/index.html", data);
 	await ctx.fs.outputFile("./docs/index.html", html);
 	await ctx.fs.copy("./docs-src/css", "./docs/css", { overwrite: true });
 });
@@ -168,7 +168,7 @@ namespace("server", (ns) => {
 task("start", ["client:start".async(), "server:start".async()]);
 
 task("w", async (ctx) => {
-	let inc = 1;
+	const inc = 1;
 	// ctx.monitor('./src', 'sleep 5')
 	// ctx.monitor('./src', ['echo test', 'sleep 5'])
 	ctx.monitor("./src", async () => {

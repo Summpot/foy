@@ -21,7 +21,7 @@
 		"format": "biome format --write"
 	},
 	"bin": {
-		"foy": "./dist/index.js"
+		"foy": "./dist/cli.js"
 	},
 	"pre-commit": [],
 	"files": ["dist"],

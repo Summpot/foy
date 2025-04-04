@@ -1,12 +1,18 @@
-import { CliLoading } from "./cli-loading";
-import type { Task } from "./task";
+import { Stream, Writable } from "stream";
 import chalk from "chalk";
-import { hashAny, defaults, Is, DefaultLogFile, formatDuration } from "./utils";
-import { Writable, Stream } from "stream";
-import { fs } from "./fs";
-import { ShellContext } from "./exec";
-import { logger, ILogInfo, ILoggerProps, LogLevels, Logger } from "./logger";
 import figures from "figures";
+import { CliLoading } from "./cli-loading";
+import { ShellContext } from "./exec";
+import { fs } from "./fs";
+import {
+	ILogInfo,
+	type ILoggerProps,
+	LogLevels,
+	Logger,
+	logger,
+} from "./logger";
+import type { Task } from "./task";
+import { DefaultLogFile, Is, defaults, formatDuration, hashAny } from "./utils";
 
 export interface GlobalOptions {
 	/**
@@ -151,14 +157,14 @@ export class TaskManager {
 	}
 	resolveDependencyTree(t: Task, depth = 0): DepsTree {
 		let asyncDeps: DepsTree[][] = [];
-		let syncDeps: DepsTree[] = [];
-		let asyncDepsMap: { [k: number]: DepsTree[] } = {};
+		const syncDeps: DepsTree[] = [];
+		const asyncDepsMap: { [k: number]: DepsTree[] } = {};
 		if (t.async === true) {
 			t.async = 0;
 		}
 		if (t.dependencies) {
 			t.dependencies.forEach((taskDep) => {
-				let fullTask = this._tasks[taskDep.name];
+				const fullTask = this._tasks[taskDep.name];
 				if (!fullTask) {
 					throw new TypeError(`Cannot find task with name [${taskDep.name}]`);
 				}
@@ -170,13 +176,13 @@ export class TaskManager {
 						...taskDep.options,
 					},
 				};
-				let depTask = this.resolveDependencyTree(t, depth + 1);
+				const depTask = this.resolveDependencyTree(t, depth + 1);
 				if (t.async === false || !Is.defined(t.async)) {
 					// sync tasks
 					syncDeps.push(depTask);
 				} else {
-					let idx = t.async === true ? 0 : t.async;
-					let deps = (asyncDepsMap[idx] = asyncDepsMap[idx] || []);
+					const idx = t.async === true ? 0 : t.async;
+					const deps = (asyncDepsMap[idx] = asyncDepsMap[idx] || []);
 					deps.push(depTask);
 				}
 			});
@@ -202,10 +208,10 @@ export class TaskManager {
 		return defaults(props.spinner, t.spinner, this.globalOptions.spinner, true);
 	}
 	async runDepsTree(depsTree: DepsTree, props: RunTaskOptions) {
-		let t = depsTree.task;
-		let taskHash = hashAny(t);
-		let hasSpinner = this.hasSpinner(t, props);
-		let startTime = Date.now();
+		const t = depsTree.task;
+		const taskHash = hashAny(t);
+		const hasSpinner = this.hasSpinner(t, props);
+		const startTime = Date.now();
 
 		let didResolved = null as ((value?: any) => void) | null;
 		if (this._didMap.has(taskHash) && !t.force) {
@@ -248,7 +254,7 @@ export class TaskManager {
 		depsTree.state = TaskState.loading;
 
 		if (t.resolveOptions && props.parentCtx) {
-			let lazyOptions = await t.resolveOptions(props.parentCtx);
+			const lazyOptions = await t.resolveOptions(props.parentCtx);
 			t.options = {
 				...t.options,
 				...lazyOptions,
@@ -260,7 +266,7 @@ export class TaskManager {
 		}
 
 		try {
-			let ret = t.fn && (await t.fn(ctx));
+			const ret = t.fn && (await t.fn(ctx));
 			depsTree.state = TaskState.succeeded;
 			didResolved && didResolved();
 			return ret;
@@ -325,9 +331,9 @@ export class TaskManager {
 			...(t.options || null),
 			...(props.options || null),
 		};
-		let depsTree = this.resolveDependencyTree(t);
-		let loading = this.hasSpinner(t, props);
-		let cliLoading = new CliLoading({
+		const depsTree = this.resolveDependencyTree(t);
+		const loading = this.hasSpinner(t, props);
+		const cliLoading = new CliLoading({
 			depsTree,
 			indent: defaults(props.indent, this.globalOptions.indent),
 		});
@@ -342,7 +348,7 @@ export class TaskManager {
 		await this.runListner("before", t.namespaces, [t]);
 
 		try {
-			let ret = await this.runDepsTree(depsTree, props);
+			const ret = await this.runDepsTree(depsTree, props);
 			return ret;
 		} catch (e) {
 			await this.runListner("onerror", t.namespaces, [e, t]);
@@ -359,7 +365,7 @@ export class TaskManager {
 const TMKey = `@foy${require("../package.json").version}/taskManager`;
 /** @internal */
 export function getGlobalTaskManager() {
-	let taskManager: TaskManager = (global[TMKey] =
+	const taskManager: TaskManager = (global[TMKey] =
 		global[TMKey] || new TaskManager());
 	return taskManager;
 }

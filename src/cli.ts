@@ -1,13 +1,12 @@
+import { type ChildProcess, spawn } from "node:child_process";
+import pathLib, { extname } from "node:path";
 import cac from "cac";
-import { fs } from "./fs";
-import pathLib, { extname } from "path";
-import os from "os";
-import { logger } from "./logger";
-import { Is } from "./utils";
-import { getGlobalTaskManager } from "./task-manager";
 import chalk from "chalk";
 import { initDefaultCli } from "./default-cli";
-import { spawn, ChildProcess } from "child_process";
+import { fs } from "./fs";
+import { logger } from "./logger";
+import { getGlobalTaskManager } from "./task-manager";
+import { Is } from "./utils";
 
 const { foyFiles, registers, defaultCli } = initDefaultCli();
 async function main() {
@@ -53,9 +52,9 @@ async function main() {
 		].map(([inspect, inspectVal]) => {
 			if (inspectVal) {
 				if (typeof inspectVal === "string") {
-					inspect += "=" + inspectVal;
+					inspect += `=${inspectVal}`;
 				}
-				NODE_OPTIONS += " " + inspect;
+				NODE_OPTIONS += ` ${inspect}`;
 			}
 		});
 		results.push(
@@ -78,9 +77,9 @@ async function main() {
 	}
 	// fix zombie process sometimes
 	process.on("SIGINT", () => {
-		results.forEach((p) => {
+		for (const p of results) {
 			p.kill(9);
-		});
+		}
 	});
 }
 

@@ -1,13 +1,13 @@
+import { logger } from "../../logger";
 import {
-	task,
-	namespace,
-	before,
 	after,
+	before,
+	namespace,
 	onerror,
 	setGlobalOptions,
+	task,
 } from "../../task";
 import { sleep } from "../../utils";
-import { logger } from "../../logger";
 setGlobalOptions({ strict: true, spinner: false, showTaskDuration: false });
 before((t) => {
 	logger.log("beforeAll", t.name);
@@ -28,9 +28,9 @@ task("error", async () => {
 	logger.log("error");
 });
 task("exec", async (ctx) => {
-	let echo1 = await ctx.exec("echo 1");
+	const echo1 = await ctx.exec("echo 1");
 	logger.info(`echo1`, echo1.stdout);
-	let sleep = ctx.exec("sleep 1");
+	const sleep = ctx.exec("sleep 1");
 	logger.info(sleep.killed, typeof sleep.then, typeof sleep.kill);
 });
 namespace("ns1", (ns) => {

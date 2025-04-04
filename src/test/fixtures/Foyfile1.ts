@@ -1,6 +1,6 @@
-import { task, desc, option, logger } from "../../";
-import { strict, setGlobalOptions } from "../../task";
 import { resolve } from "path";
+import { desc, logger, option, task } from "../../";
+import { setGlobalOptions, strict } from "../../task";
 
 setGlobalOptions({ strict: true, spinner: false, showTaskDuration: false });
 
@@ -14,7 +14,7 @@ task<{ a: boolean }>("aa", async (ctx) => {
 	logger.error(ctx.options);
 });
 
-let bb = task<{ test: number }>("bb", ["aa"], async (ctx) => {
+const bb = task<{ test: number }>("bb", ["aa"], async (ctx) => {
 	logger.debug(ctx.options, ctx.global.options);
 });
 desc("CC");
@@ -25,7 +25,7 @@ task("cc", [{ ...bb, options: { test: 123 } }, "aa"], async (ctx) => {
 
 task("dd", async (ctx) => {
 	ctx.cd("./src");
-	let p = await ctx.exec("pwd", {
+	const p = await ctx.exec("pwd", {
 		stdio: "pipe",
 	});
 	logger.debug(
@@ -85,7 +85,7 @@ task(
 );
 
 task("pushpopd", async (ctx) => {
-	let pwd = (
+	const pwd = (
 		await ctx
 			.env("NODE_ENV", "TEST")
 			.env("SOME_ENV", "SOME")

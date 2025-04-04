@@ -1,30 +1,32 @@
 #!/usr/bin/env node
 
-import cac from "cac";
-import { fs } from "./fs";
-import pathLib from "path";
 import os from "os";
-import { logger } from "./logger";
-import { Is } from "./utils";
-import { getGlobalTaskManager } from "./task-manager";
+import pathLib from "path";
+import cac from "cac";
 import chalk from "chalk";
 import { initDefaultCli } from "./default-cli";
+import { fs } from "./fs";
+import { logger } from "./logger";
+import { getGlobalTaskManager } from "./task-manager";
+import { Is } from "./utils";
 
 export function runCli() {
 	const { defaultCli, defaultHelpMsg, outputCompletion, taskArgs } =
 		initDefaultCli();
 	const taskCli = cac("foy");
 
-	let taskManager = getGlobalTaskManager();
+	const taskManager = getGlobalTaskManager();
 	taskManager.getTasks().forEach((t) => {
-		let strict = taskManager.globalOptions.strict || t.strict;
-		let cmd = taskCli.command(t.name, t.desc, { allowUnknownOptions: !strict });
+		const strict = taskManager.globalOptions.strict || t.strict;
+		const cmd = taskCli.command(t.name, t.desc, {
+			allowUnknownOptions: !strict,
+		});
 		if (t.optionDefs) {
 			t.optionDefs.forEach((def) => cmd.option(...def));
 		}
 		cmd.action(async (...args) => {
-			let options = args.pop();
-			let { globalOptions } = taskManager;
+			const options = args.pop();
+			const { globalOptions } = taskManager;
 			globalOptions.rawArgs = taskCli.rawArgs;
 			globalOptions.options = options;
 			await taskManager.run(t.name, {
@@ -36,8 +38,8 @@ export function runCli() {
 
 	taskCli.help((sections) => {
 		if (!taskCli.matchedCommand) {
-			let last = sections[sections.length - 1];
-			let lines = last.body.split("\n");
+			const last = sections[sections.length - 1];
+			const lines = last.body.split("\n");
 			lines.pop();
 			last.body = defaultHelpMsg;
 		}

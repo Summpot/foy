@@ -1,11 +1,11 @@
-import cac, { CAC } from "cac";
-import { fs } from "./fs";
-import pathLib from "path";
 import os from "os";
-import { logger } from "./logger";
-import { Is } from "./utils";
-import { getGlobalTaskManager } from "./task-manager";
+import pathLib from "path";
+import cac, { type CAC } from "cac";
 import requireStr from "require-from-string";
+import { fs } from "./fs";
+import { logger } from "./logger";
+import { getGlobalTaskManager } from "./task-manager";
+import { Is } from "./utils";
 
 export function initDefaultCli() {
 	const defaultCli = cac();
@@ -31,7 +31,7 @@ export function initDefaultCli() {
 	defaultOptions.forEach(([name, desc]) => {
 		defaultCli.option(name, desc);
 	});
-	let parsedArgv = defaultCli.parse(process.argv);
+	const parsedArgv = defaultCli.parse(process.argv);
 
 	if (defaultCli.options.init) {
 		let ext = defaultCli.options.init;
@@ -96,7 +96,7 @@ _foy_complete_func()
 	}
 
 	let foyFiles: string[] = arrify(defaultCli.options.config);
-	let registers: string[] = arrify(defaultCli.options.require);
+	const registers: string[] = arrify(defaultCli.options.require);
 
 	if (foyFiles.length) {
 		foyFiles = foyFiles.map((c) => pathLib.resolve(process.cwd(), c));
@@ -109,8 +109,8 @@ _foy_complete_func()
 		}
 	} else {
 		// find default foyfiles
-		let findFoyfiles = (baseDir: string) => {
-			let cwdFoyfiles = fs
+		const findFoyfiles = (baseDir: string) => {
+			const cwdFoyfiles = fs
 				.readdirSync(baseDir)
 				.filter((f) => f.startsWith("Foyfile."));
 			if (cwdFoyfiles.length) {
@@ -148,7 +148,7 @@ _foy_complete_func()
 	// add ts-node registry for ts foyfile
 	function isESM() {
 		try {
-			let pkg = fs.readJsonSync("./package.json");
+			const pkg = fs.readJsonSync("./package.json");
 			return pkg.type === "module";
 		} catch (e) {
 			return false;

@@ -1,7 +1,7 @@
 import _fs from "fs";
-import util from "util";
 import pathLib from "path";
-import { debounce, Is, promiseQueue } from "./utils";
+import util from "util";
+import { Is, debounce, promiseQueue } from "./utils";
 
 const ENOENT = "ENOENT"; // not found
 const EEXIST = "EEXIST";
@@ -35,7 +35,7 @@ async function copy(
 	// auto merge for directory
 	if (srcStat.isDirectory()) {
 		await fsExtra.mkdirp(dist);
-		let childs = await _fs.promises.readdir(src);
+		const childs = await _fs.promises.readdir(src);
 		await Promise.all(
 			childs.map((child) =>
 				copy(pathLib.join(src, child), pathLib.join(dist, child), opts),
@@ -43,7 +43,7 @@ async function copy(
 		);
 	} else if (srcStat.isFile() || srcStat.isSymbolicLink()) {
 		if (await fsExtra.lexists(dist)) {
-			let isDir = await fsExtra.isDirectory(dist);
+			const isDir = await fsExtra.isDirectory(dist);
 			if (isDir) {
 				dist = pathLib.join(dist, pathLib.basename(src));
 			} else if (opts.overwrite) {
@@ -52,12 +52,12 @@ async function copy(
 				return;
 			}
 		} else {
-			let lastChar = dist[dist.length - 1];
+			const lastChar = dist[dist.length - 1];
 			if (lastChar === "/" || lastChar === "\\") {
 				await fsExtra.mkdirp(dist);
 				dist = pathLib.join(dist, pathLib.basename(src));
 			} else {
-				let dir = pathLib.dirname(dist);
+				const dir = pathLib.dirname(dist);
 				await fsExtra.mkdirp(dir);
 			}
 		}
@@ -194,7 +194,7 @@ const fsExtra = {
 	 * @param dir
 	 */
 	async mkdirp(dir: string) {
-		let parent = pathLib.dirname(dir);
+		const parent = pathLib.dirname(dir);
 		if (!(await fsExtra.exists(parent))) {
 			await fsExtra.mkdirp(parent);
 		}
@@ -210,7 +210,7 @@ const fsExtra = {
 	 */
 	mkdirpSync(dir: string) {
 		if (dir === "/") return;
-		let parent = pathLib.dirname(dir);
+		const parent = pathLib.dirname(dir);
 		if (!_fs.existsSync(parent)) {
 			fsExtra.mkdirpSync(parent);
 		}
@@ -250,12 +250,12 @@ const fsExtra = {
 		}
 	},
 	async outputFile(path: string, data: any, options?: WriteOptions) {
-		let dir = pathLib.dirname(path);
+		const dir = pathLib.dirname(path);
 		await fsExtra.mkdirp(dir);
 		return _fs.promises.writeFile(path, data, options);
 	},
 	outputFileSync(path: string, data: any, options?: WriteOptions) {
-		let dir = pathLib.dirname(path);
+		const dir = pathLib.dirname(path);
 		fsExtra.mkdirpSync(dir);
 		return _fs.writeFileSync(path, data, options);
 	},
@@ -321,12 +321,12 @@ const fsExtra = {
 			stat: _fs.Stats,
 		) => Promise<boolean | void> | boolean | void,
 	) {
-		let children = await _fs.promises.readdir(dir);
+		const children = await _fs.promises.readdir(dir);
 		await Promise.all(
 			children.map(async (child) => {
-				let path = pathLib.join(dir, child);
-				let stat = await _fs.promises.stat(path);
-				let isSkipped = await skip(path, stat);
+				const path = pathLib.join(dir, child);
+				const stat = await _fs.promises.stat(path);
+				const isSkipped = await skip(path, stat);
 				if (isSkipped) return;
 				if (stat.isDirectory()) {
 					await fsExtra.iter(path, skip);

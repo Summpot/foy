@@ -1,18 +1,18 @@
 import chalk from "chalk";
-import { ShellContext } from "./exec";
-import { hashAny, Is, defaults } from "./utils";
-import { fs } from "./fs";
-import { ILoggerProps, logger } from "./logger";
 import { CliLoading } from "./cli-loading";
-import { DepBuilder } from "./dep-builder";
-import {
-	GlobalOptions,
-	RunTaskOptions,
-	getGlobalTaskManager,
-	TaskContext,
-	ListenerNames,
-} from "./task-manager";
+import type { DepBuilder } from "./dep-builder";
+import { ShellContext } from "./exec";
+import { fs } from "./fs";
+import { type ILoggerProps, logger } from "./logger";
 import { deferRunCli } from "./run-cli";
+import {
+	type GlobalOptions,
+	type ListenerNames,
+	RunTaskOptions,
+	type TaskContext,
+	getGlobalTaskManager,
+} from "./task-manager";
+import { Is, defaults, hashAny } from "./utils";
 interface OptionConfig {
 	default?: any;
 	type?: any[];
@@ -83,7 +83,7 @@ function appendCallback<Fn extends (...args) => void | Promise<void>>(
 	name: ListenerNames,
 	fn: Fn,
 ) {
-	let tm = getGlobalTaskManager();
+	const tm = getGlobalTaskManager();
 	tm.listeners[name].push({
 		namespaces: tm.namespaces,
 		fn,

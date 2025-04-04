@@ -1,13 +1,13 @@
-import { task } from "../task";
-import { fs } from "../fs";
-import { exec } from "../exec";
-import * as path from "path";
-import { logger } from "../logger";
-import { Is, sleep } from "../utils";
-import { describe, it, beforeAll, beforeEach } from "vitest";
 import assert from "assert";
+import * as path from "path";
 import stripAnsi from "strip-ansi";
+import { beforeAll, beforeEach, describe, it } from "vitest";
 import { expect } from "vitest";
+import { exec } from "../exec";
+import { fs } from "../fs";
+import { logger } from "../logger";
+import { task } from "../task";
+import { Is, sleep } from "../utils";
 
 const fixturesDir = `${__dirname}/fixtures`;
 const snapsDir = `${fixturesDir}/snaps`;
@@ -37,7 +37,7 @@ function test(cmd: string, expectedExitCode?: number) {
 			});
 		},
 		async init() {
-			let p = await exec(`jiti ./src/cli.ts --config ${fixturesDir}/${cmd}`, {
+			const p = await exec(`jiti ./src/cli.ts --config ${fixturesDir}/${cmd}`, {
 				stdio: void 0,
 				env: {
 					...process.env,
@@ -47,7 +47,7 @@ function test(cmd: string, expectedExitCode?: number) {
 			}).catch((er) => er);
 			exitCode = p.exitCode;
 			out = normal(p.stdout + p.stderr);
-			let snapFile = snapsDir + "/" + cmd.replace(/[^\w-]/g, "_");
+			const snapFile = snapsDir + "/" + cmd.replace(/[^\w-]/g, "_");
 			if (UpdateSnap) {
 				// tslint:disable-next-line:no-floating-promises
 				fs.outputFile(snapFile, out);
@@ -59,8 +59,8 @@ function test(cmd: string, expectedExitCode?: number) {
 	};
 }
 
-describe("task", function () {
-	let tests = [
+describe("task", () => {
+	const tests = [
 		test(`Foyfile1.ts aa -a 1 -b 1 -d`),
 		test(`Foyfile1.ts aa -h`),
 		test(`Foyfile1.ts -h`),

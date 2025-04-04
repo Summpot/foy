@@ -1,8 +1,8 @@
+import assert, { deepStrictEqual, strictEqual } from "assert";
 import * as os from "os";
 import * as pathLib from "path";
-import { describe, it, beforeAll, beforeEach } from "vitest";
+import { beforeAll, beforeEach, describe, it } from "vitest";
 import { fs } from "../fs";
-import assert, { deepStrictEqual, strictEqual } from "assert";
 
 const baseDir = os.tmpdir() + "/foy-fs-test";
 describe("fs", () => {
@@ -16,15 +16,15 @@ describe("fs", () => {
 	it("copy file", async () => {
 		await fs.outputFile(`${baseDir}/test`, "aaa");
 		await fs.copy(`${baseDir}/test`, `${baseDir}/test2`);
-		let s = await fs.readFile(`${baseDir}/test`, "utf8");
+		const s = await fs.readFile(`${baseDir}/test`, "utf8");
 		strictEqual(s, "aaa");
 	});
 	it("json", async () => {
-		let o1 = { aa: 1 };
+		const o1 = { aa: 1 };
 		fs.outputJsonSync(`${baseDir}/json/dir/1`, o1);
 		deepStrictEqual(fs.readJsonSync(`${baseDir}/json/dir/1`), o1);
 
-		let o2 = { aa: 2 };
+		const o2 = { aa: 2 };
 		await fs.outputJson(`${baseDir}/json/dir/2`, o2);
 		deepStrictEqual(await fs.readJson(`${baseDir}/json/dir/2`), o2);
 	});

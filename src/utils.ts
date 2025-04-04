@@ -1,7 +1,7 @@
 import { join } from "path";
 
 let objUid = 0;
-let objUidMap = new WeakMap<object, number>();
+const objUidMap = new WeakMap<object, number>();
 /** @internal */
 export function getType(key: any) {
 	const t: string = Object.prototype.toString.call(key);
@@ -53,7 +53,7 @@ export function debounce<T extends (...args: any[]) => void>(
 	getArgsKey: (args: any[]) => string = (args: any[]) => args.join("|"),
 ): T {
 	let timerMap = new Map<string, any>();
-	let newCb = (...args) => {
+	const newCb = (...args) => {
 		if (timerMap.size > 20) {
 			timerMap = new Map();
 		}
@@ -125,7 +125,7 @@ export function defaults<T>(
 	defaultVal: T,
 ): T;
 export function defaults<T>(...args: (T | undefined)[]): T {
-	let [val, ...defaultVals] = args;
+	const [val, ...defaultVals] = args;
 	if (Is.defined(val)) return val;
 	if (defaultVals.length === 0) {
 		return val as any;

@@ -1,10 +1,10 @@
+import chalk from "chalk";
 import Spinners from "cli-spinners";
 import logFigures from "figures";
-import { formatDuration, Is } from "./utils";
-import chalk from "chalk";
-import { DepsTree, TaskState } from "./task-manager";
-import wcwidth from "wcwidth";
 import stripAnsi from "strip-ansi";
+import wcwidth from "wcwidth";
+import { type DepsTree, TaskState } from "./task-manager";
+import { Is, formatDuration } from "./utils";
 
 export interface Props {
 	depsTree: DepsTree;
@@ -29,16 +29,16 @@ export class CliLoading {
 		};
 	}
 	count(uid: string) {
-		let count = this._loadingFrameMap.get(uid) || 0;
+		const count = this._loadingFrameMap.get(uid) || 0;
 		this._loadingFrameMap.set(uid, count + 1);
 		return count;
 	}
 	renderDepsTree(depsTree: DepsTree, output: string[] = []) {
-		let indent = Array(depsTree.depth * this.props.indent)
+		const indent = Array(depsTree.depth * this.props.indent)
 			.fill(" ")
 			.join("");
-		let frames = Spinners.dots.frames;
-		let symbol = {
+		const frames = Spinners.dots.frames;
+		const symbol = {
 			[TaskState.waiting]: chalk.gray(logFigures.ellipsis),
 			[TaskState.pending]: chalk.blueBright(logFigures.arrowRight),
 			[TaskState.loading]: chalk.cyan(
@@ -49,15 +49,15 @@ export class CliLoading {
 			[TaskState.skipped]: chalk.yellow(logFigures.info),
 			...this.props.symbolMap,
 		}[depsTree.state];
-		let color =
+		const color =
 			(this.props.grayState || [TaskState.waiting]).indexOf(depsTree.state) >= 0
 				? (f) => chalk.gray(f)
 				: (f) => f;
-		let skipped = depsTree.state === TaskState.skipped;
+		const skipped = depsTree.state === TaskState.skipped;
 		output.push(
 			`${indent}${symbol} ${color(depsTree.task.name)}${skipped ? chalk.gray(` [skipped]`) : ""}${depsTree.priority ? chalk.gray(` [priority: ${depsTree.priority}]`) : ""}${depsTree.duration >= 0 ? chalk.gray(` [duration: ${formatDuration(depsTree.duration)}]`) : ""}`,
 		);
-		let childDeps = ([] as DepsTree[])
+		const childDeps = ([] as DepsTree[])
 			.concat(...depsTree.asyncDeps)
 			.concat(depsTree.syncDeps);
 		for (const child of childDeps) {
@@ -66,12 +66,12 @@ export class CliLoading {
 		return output;
 	}
 	render() {
-		let columns = this.props.stream.columns || 80;
-		let rows = this.props.stream.rows || Infinity;
+		const columns = this.props.stream.columns || 80;
+		const rows = this.props.stream.rows || Number.POSITIVE_INFINITY;
 		let output = this.renderDepsTree(this.props.depsTree);
-		let isFirstRendering = this.linesToClear === 0;
+		const isFirstRendering = this.linesToClear === 0;
 		output.push("");
-		let outputLineCounts = output.map((line) =>
+		const outputLineCounts = output.map((line) =>
 			Math.max(1, Math.ceil(wcwidth(stripAnsi(line)) / columns)),
 		);
 		this.clear();
