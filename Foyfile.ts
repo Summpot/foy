@@ -22,7 +22,7 @@ before(() => {})
 
 desc('build whole project')
 task('build', async (ctx) => {
-  await fs.rmrf('./lib')
+  await fs.rmrf('./dist')
   await ctx.exec(['rslib build', 'chmod +x ./dist/index.js'])
 })
 
@@ -38,9 +38,7 @@ task<{ args: string; env: NodeJS.ProcessEnv }>('test', async (ctx) => {
   await ctx
     .env('DISABLE_V8_COMPILE_CACHE', '1')
     .exec(
-      `vitest run ${
-        ctx.options.args || ''
-      } ${ctx.task.rawArgs.map((a) => `"${a}"`).join(' ')}`,
+      `vitest run ${ctx.options.args || ''} ${ctx.task.rawArgs.map((a) => `"${a}"`).join(' ')}`,
       { env: ctx.options.env || process.env },
     )
 })
@@ -67,7 +65,6 @@ task('watch', [
 task<{ version: string }>('preversion', async (ctx) => {
   await ctx.exec('pnpm i')
   await Promise.all([ctx.run('test'), ctx.run('build'), ctx.run('site')])
-  await fs.rmrf('./lib/test')
   await ctx.exec([
     `changelog --${ctx.options.version}`,
     `git add -A`,
