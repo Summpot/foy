@@ -23,7 +23,7 @@ before(() => {});
 desc("build whole project");
 task("build", async (ctx) => {
 	await fs.rmrf("./dist");
-	await ctx.exec(["rslib build", "chmod +x ./dist/index.js"]);
+	await ctx.exec("rslib build");
 });
 
 desc("generate doc");
