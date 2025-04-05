@@ -1,6 +1,6 @@
 {
 	"name": "@summpot/foy",
-	"version": "0.2.46",
+	"version": "0.2.47",
 	"type": "module",
 	"description": "A simple, light-weight and modern task runner for general purpose.",
 	"types": "./dist/index.d.ts",
@@ -12,11 +12,12 @@
 		}
 	},
 	"scripts": {
-		"build": "jiti ./src/cli.ts -- build",
+		"foy": "jiti ./src/cli.ts",
+		"build": "pnpm foy -- build",
 		"check": "biome check --write",
-		"test": "jiti ./src/cli.ts -- test",
-		"test:update-snap": "jiti ./src/cli.ts -- test:update-snap",
-		"watch": "jiti ./src/cli.ts -- watch",
+		"test": "pnpm foy -- test",
+		"test:update-snap": "pnpm foy -- test:update-snap",
+		"watch": "pnpm foy -- watch",
 		"format": "biome format --write"
 	},
 	"bin": {
