@@ -13,6 +13,10 @@ export default defineConfig({
 					cli: "./src/cli.ts",
 				},
 			},
+			autoExternal: {
+				dependencies: false,
+				devDependencies: true,
+			},
 		},
 		{
 			dts: true,
@@ -24,9 +28,13 @@ export default defineConfig({
 					cli: "./src/cli.ts",
 				},
 			},
+			autoExternal: {
+				dependencies: false,
+				devDependencies: true,
+			},
 		},
 	],
 	source: {
-		exclude: ["./src/test"],
+		exclude: ["./src/test/*"],
 	},
 });
